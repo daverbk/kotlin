@@ -3,10 +3,11 @@ plugins {
 }
 
 rootProject.name = "kotlin"
-include("00-helloworld")
-include("01-basictypes")
-include("02-collections")
-include("03-controlflow")
-include("04-functions")
-include("05-classes")
-include("06-nullsafety")
+include("tour")
+include("tour:00-helloworld")
+include("tour:01-basictypes")
+include("tour:02-collections")
+include("tour:03-controlflow")
+include("tour:04-functions")
+include("tour:05-classes")
+include("tour:06-nullsafety")
