@@ -1,0 +1,38 @@
+package conventions
+
+import java.util.*
+
+class DateRange(val start: MyDate, val end: MyDate) : Iterable<MyDate> {
+    override fun iterator(): Iterator<MyDate> {
+        return object : Iterator<MyDate> {
+            var current: MyDate = start
+
+            override fun next(): MyDate {
+                if (!hasNext()) throw NoSuchElementException()
+                val result = current
+                current = current.followingDate()
+                return result
+            }
+
+            override fun hasNext(): Boolean = current <= end
+        }
+    }
+}
+
+fun iterateOverDateRange(firstDate: MyDate, secondDate: MyDate, handler: (MyDate) -> Unit) {
+    for (date in firstDate..secondDate) {
+        handler(date)
+    }
+}
+
+fun MyDate.followingDate(): MyDate {
+    val c = Calendar.getInstance()
+    c.set(year, month, dayOfMonth)
+    val milliseconds = 24 * 60 * 60 * 1000
+    val timeInMillis = c.timeInMillis + milliseconds
+    val result = Calendar.getInstance()
+    result.timeInMillis = timeInMillis
+    return MyDate(result.get(Calendar.YEAR), result.get(Calendar.MONTH), result.get(Calendar.DATE))
+}
+
+operator fun MyDate.rangeTo(other: MyDate) = DateRange(this, other)
