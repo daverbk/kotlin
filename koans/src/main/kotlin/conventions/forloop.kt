@@ -25,14 +25,4 @@ fun iterateOverDateRange(firstDate: MyDate, secondDate: MyDate, handler: (MyDate
     }
 }
 
-fun MyDate.followingDate(): MyDate {
-    val c = Calendar.getInstance()
-    c.set(year, month, dayOfMonth)
-    val milliseconds = 24 * 60 * 60 * 1000
-    val timeInMillis = c.timeInMillis + milliseconds
-    val result = Calendar.getInstance()
-    result.timeInMillis = timeInMillis
-    return MyDate(result.get(Calendar.YEAR), result.get(Calendar.MONTH), result.get(Calendar.DATE))
-}
-
 operator fun MyDate.rangeTo(other: MyDate) = DateRange(this, other)
