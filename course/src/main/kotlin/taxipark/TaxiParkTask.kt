@@ -34,3 +34,30 @@ fun TaxiPark.findSmartPassengers(): Set<Passenger> =
             .partition { it.discount != null }
         return@filter tripsWithAndWithoutDiscount.first.size > tripsWithAndWithoutDiscount.second.size
     }.toSet()
+
+/*
+ * Task #5. Find the most frequent trip duration among minute periods 0..9, 10..19, 20..29, and so on.
+ * Return any period if many are the most frequent, return `null` if there're no trips.
+ */
+fun TaxiPark.findTheMostFrequentTripDurationPeriod(): IntRange? {
+    val maxDuration = trips.maxOfOrNull { it.duration }
+    if (maxDuration == null || maxDuration < 0) return null
+
+    // build periods
+    val periods = mutableListOf<IntRange>()
+    var curr = 0..9
+    val step = 10
+    periods.add(curr)
+
+    while (maxDuration !in curr) {
+        val from = curr.first + step
+        val to = curr.last + step
+        curr = from..to
+        periods.add(curr)
+    }
+
+    // search for the most frequent
+    return periods.maxByOrNull { period ->
+        trips.count { it.duration in period }
+    }
+}
