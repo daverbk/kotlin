@@ -8,3 +8,11 @@ fun TaxiPark.findFakeDrivers(): Set<Driver> {
         trips.none { it.driver == driver }
     }.toSet()
 }
+
+/*
+ * Task #2. Find all the clients who completed at least the given number of trips.
+ */
+fun TaxiPark.findFaithfulPassengers(minTrips: Int): Set<Passenger> =
+    allPassengers.filter { passenger ->
+        trips.count { it.passengers.contains(passenger) } >= minTrips
+    }.toSet()
