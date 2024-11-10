@@ -1,12 +1,12 @@
 package funtionalprogramming
 
-fun List<Int>.allNonZero() = this.all { it != 0 }
-fun List<Int>.allNonZero1() = this.none { it == 0 }
-fun List<Int>.allNonZero2() = !this.any { it == 0 }
+fun List<Int>.allNonZero() = all { it != 0 }
+fun List<Int>.allNonZero1() = none { it == 0 }
+fun List<Int>.allNonZero2() = !any { it == 0 }
 
-fun List<Int>.containsZero() = this.any { it == 0 }
-fun List<Int>.containsZero1() = !this.all { it != 0 }
-fun List<Int>.containsZero2() = !this.none { it == 0 }
+fun List<Int>.containsZero() = any { it == 0 }
+fun List<Int>.containsZero1() = !all { it != 0 }
+fun List<Int>.containsZero2() = !none { it == 0 }
 
 fun main() {
     val list1 = listOf(1, 2, 3)
