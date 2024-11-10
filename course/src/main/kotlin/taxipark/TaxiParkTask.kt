@@ -24,3 +24,13 @@ fun TaxiPark.findFrequentPassengers(driver: Driver): Set<Passenger> =
     allPassengers.filter { passenger ->
         trips.count { it.driver == driver && it.passengers.contains(passenger) } > 1
     }.toSet()
+
+/*
+ * Task #4. Find the passengers who had a discount for majority of their trips.
+ */
+fun TaxiPark.findSmartPassengers(): Set<Passenger> =
+    allPassengers.filter { passenger ->
+        val tripsWithAndWithoutDiscount = trips.filter { it.passengers.contains(passenger) }
+            .partition { it.discount != null }
+        return@filter tripsWithAndWithoutDiscount.first.size > tripsWithAndWithoutDiscount.second.size
+    }.toSet()
