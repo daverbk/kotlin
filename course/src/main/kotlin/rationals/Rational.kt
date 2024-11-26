@@ -1,5 +1,7 @@
 package rationals
 
+import java.math.BigInteger
+
 fun main() {
     val half = 1 divBy 2
     val third = 1 divBy 3
@@ -30,14 +32,70 @@ fun main() {
 
     println(2000000000L divBy 4000000000L == 1 divBy 2)
 
-    println("912016490186296920119201192141970416029".toBigInteger() divBy
-        "1824032980372593840238402384283940832058".toBigInteger() == 1 divBy 2)
+    println(
+        "912016490186296920119201192141970416029".toBigInteger() divBy
+                "1824032980372593840238402384283940832058".toBigInteger() == 1 divBy 2
+    )
 }
 
-infix fun Number.divBy(i: Number): Rational = Rational(this, i)
+infix fun Int.divBy(i: Int): Rational = Rational(this.toBigInteger(), i.toBigInteger())
+
+infix fun Long.divBy(i: Long): Rational = Rational(this.toBigInteger(), i.toBigInteger())
+
+infix fun BigInteger.divBy(i: BigInteger): Rational = Rational(this, i)
 
 fun String.toRational(): Rational {
+    val divIndex = this.indexOf('/')
+    if (divIndex == -1) return Rational(this.toBigInteger(), BigInteger.ONE)
+
+    val numerator = this.substring(0, divIndex).toBigInteger()
+    val denominator = this.substring(divIndex + 1, this.length).toBigInteger()
+
+    return Rational(numerator, denominator)
+}
+
+operator fun RationalRange.contains(rational: Rational): Boolean {
 
 }
 
-data class Rational(val numerator: Number, val denominator: Number)
+class RationalRange(override val endInclusive: Int, override val start: Int) : Iterable<Rational>, ClosedRange<Int> {
+    override fun iterator(): Iterator<Rational> {
+
+    }
+}
+
+data class Rational(val numerator: BigInteger, val denominator: BigInteger) {
+
+    init {
+        if (denominator == BigInteger.ZERO)
+            throw IllegalArgumentException("The denominator cannot be less or equal to zero")
+    }
+
+    operator fun plus(another: Rational): Rational {
+
+    }
+
+    operator fun minus(another: Rational): Rational {
+
+    }
+
+    operator fun times(another: Rational): Rational {
+
+    }
+
+    operator fun div(another: Rational): Rational {
+
+    }
+
+    operator fun compareTo(another: Rational): Int {
+
+    }
+
+    operator fun rangeTo(to: Rational): RationalRange {
+
+    }
+
+    operator fun unaryMinus(): Rational {
+
+    }
+}
