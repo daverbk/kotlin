@@ -54,20 +54,13 @@ fun String.toRational(): Rational {
     return Rational(numerator, denominator)
 }
 
-operator fun RationalRange.contains(rational: Rational): Boolean {
+operator fun <T : Comparable<T>> ClosedRange<T>.contains(rational: Rational): Boolean =
+    rational in this
 
-}
-
-class RationalRange(override val endInclusive: Int, override val start: Int) : Iterable<Rational>, ClosedRange<Int> {
-    override fun iterator(): Iterator<Rational> {
-
-    }
-}
-
-data class Rational(val numerator: BigInteger, val denominator: BigInteger) {
+data class Rational(val numerator: BigInteger, val denominator: BigInteger) : Comparable<Rational> {
 
     init {
-        if (denominator == BigInteger.ZERO)
+        if (denominator.toInt() == 0)
             throw IllegalArgumentException("The denominator cannot be less or equal to zero")
     }
 
@@ -87,15 +80,15 @@ data class Rational(val numerator: BigInteger, val denominator: BigInteger) {
 
     }
 
-    operator fun compareTo(another: Rational): Int {
+    override operator fun compareTo(other: Rational): Int {
 
     }
 
-    operator fun rangeTo(to: Rational): RationalRange {
-
-    }
+    operator fun rangeTo(to: Rational) = this.toDecimal()..to.toDecimal()
 
     operator fun unaryMinus(): Rational {
 
     }
+
+    private fun toDecimal() = this.numerator.toBigDecimal() / this.denominator.toBigDecimal()
 }
