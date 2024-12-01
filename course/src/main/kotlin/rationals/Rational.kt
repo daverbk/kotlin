@@ -54,41 +54,79 @@ fun String.toRational(): Rational {
     return Rational(numerator, denominator)
 }
 
+// TODO: Investigate the recursion
 operator fun <T : Comparable<T>> ClosedRange<T>.contains(rational: Rational): Boolean =
     rational in this
 
 data class Rational(val numerator: BigInteger, val denominator: BigInteger) : Comparable<Rational> {
 
     init {
-        if (denominator.toInt() == 0)
-            throw IllegalArgumentException("The denominator cannot be less or equal to zero")
+        if (denominator == BigInteger.ZERO)
+            throw IllegalArgumentException("The denominator cannot be equal to zero")
     }
 
     operator fun plus(another: Rational): Rational {
+        if (this.denominator == another.denominator) {
+            return Rational(this.numerator + another.numerator, this.denominator)
+        }
 
+        // lcm(a, b) = |a*b| / gcd(a,b)
+        // TODO: Remove duplication
+        val lcm = (this.denominator * another.denominator).abs() / this.denominator.gcd(another.denominator)
+        val additionalMultiplier = lcm / this.denominator
+        val anotherAdditionalMultiplier = lcm / another.denominator
+
+        return Rational(
+            this.numerator * additionalMultiplier,
+            this.denominator * additionalMultiplier
+        ).plus(
+            Rational(
+                another.numerator * anotherAdditionalMultiplier,
+                another.denominator * anotherAdditionalMultiplier
+            )
+        )
     }
 
     operator fun minus(another: Rational): Rational {
+        if (this.denominator == another.denominator) {
+            return Rational(this.numerator - another.numerator, this.denominator)
+        }
 
+        // lcm(a, b) = |a*b| / gcd(a,b)
+        // TODO: Remove duplication
+        val lcm = (this.denominator * another.denominator).abs() / this.denominator.gcd(another.denominator)
+        val additionalMultiplier = lcm / this.denominator
+        val anotherAdditionalMultiplier = lcm / another.denominator
+
+        return Rational(
+            this.numerator * additionalMultiplier,
+            this.denominator * additionalMultiplier
+        ).minus(
+            Rational(
+                another.numerator * anotherAdditionalMultiplier,
+                another.denominator * anotherAdditionalMultiplier
+            )
+        )
     }
 
-    operator fun times(another: Rational): Rational {
+    operator fun times(another: Rational): Rational =
+        Rational(this.numerator * another.numerator, this.denominator * another.denominator)
 
-    }
+    operator fun div(another: Rational): Rational = this * Rational(another.denominator, this.numerator)
 
-    operator fun div(another: Rational): Rational {
+    operator fun unaryMinus(): Rational = Rational(this.numerator.negate(), this.denominator)
 
-    }
-
-    override operator fun compareTo(other: Rational): Int {
-
-    }
+    override operator fun compareTo(other: Rational): Int = this.toDecimal().compareTo(other.toDecimal())
 
     operator fun rangeTo(to: Rational) = this.toDecimal()..to.toDecimal()
 
-    operator fun unaryMinus(): Rational {
+    private fun toDecimal() = this.numerator.toBigDecimal() / this.denominator.toBigDecimal()
 
+    override fun toString(): String {
+        // TODO: Implement
+
+        return ""
     }
 
-    private fun toDecimal() = this.numerator.toBigDecimal() / this.denominator.toBigDecimal()
+    // TODO: Implement normalization
 }
