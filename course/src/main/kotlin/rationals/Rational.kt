@@ -58,7 +58,7 @@ fun String.toRational(): Rational {
 operator fun <T : Comparable<T>> ClosedRange<T>.contains(rational: Rational): Boolean =
     rational in this
 
-data class Rational(val numerator: BigInteger, val denominator: BigInteger) : Comparable<Rational> {
+data class Rational(var numerator: BigInteger, var denominator: BigInteger) : Comparable<Rational> {
 
     init {
         if (denominator == BigInteger.ZERO)
@@ -123,10 +123,37 @@ data class Rational(val numerator: BigInteger, val denominator: BigInteger) : Co
     private fun toDecimal() = this.numerator.toBigDecimal() / this.denominator.toBigDecimal()
 
     override fun toString(): String {
-        // TODO: Implement
-
-        return ""
+        if (denominator == BigInteger.ONE) return numerator.toString()
+        normalize()
+        return "$numerator/$denominator"
     }
 
-    // TODO: Implement normalization
+    private fun normalize() {
+        val gcd = numerator.gcd(denominator)
+        numerator /= gcd
+        denominator /= gcd
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Rational
+
+        this.normalize()
+        other.normalize()
+
+        println("Comparing $this and $other")
+
+        if (numerator != other.numerator) return false
+        if (denominator != other.denominator) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = numerator.hashCode()
+        result = 31 * result + denominator.hashCode()
+        return result
+    }
 }
