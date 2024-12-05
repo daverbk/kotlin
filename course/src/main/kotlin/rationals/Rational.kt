@@ -54,10 +54,6 @@ fun String.toRational(): Rational {
     return Rational(numerator, denominator)
 }
 
-// TODO: Investigate the recursion
-operator fun <T : Comparable<T>> ClosedRange<T>.contains(rational: Rational): Boolean =
-    rational in this
-
 data class Rational(var numerator: BigInteger, var denominator: BigInteger) : Comparable<Rational> {
 
     init {
@@ -117,8 +113,6 @@ data class Rational(var numerator: BigInteger, var denominator: BigInteger) : Co
     operator fun unaryMinus(): Rational = Rational(this.numerator.negate(), this.denominator)
 
     override operator fun compareTo(other: Rational): Int = this.toDecimal().compareTo(other.toDecimal())
-
-    operator fun rangeTo(to: Rational) = this.toDecimal()..to.toDecimal()
 
     private fun toDecimal() = this.numerator.toBigDecimal() / this.denominator.toBigDecimal()
 
