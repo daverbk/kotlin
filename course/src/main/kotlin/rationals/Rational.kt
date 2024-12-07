@@ -1,6 +1,8 @@
 package rationals
 
 import java.math.BigInteger
+import java.math.BigInteger.ONE
+import java.math.BigInteger.ZERO
 
 fun main() {
     val half = 1 divBy 2
@@ -38,94 +40,50 @@ fun main() {
     )
 }
 
-infix fun Int.divBy(i: Int): Rational = Rational(this.toBigInteger(), i.toBigInteger())
-
-infix fun Long.divBy(i: Long): Rational = Rational(this.toBigInteger(), i.toBigInteger())
-
-infix fun BigInteger.divBy(i: BigInteger): Rational = Rational(this, i)
-
-fun String.toRational(): Rational {
-    val divIndex = this.indexOf('/')
-    if (divIndex == -1) return Rational(this.toBigInteger(), BigInteger.ONE)
-
-    val numerator = this.substring(0, divIndex).toBigInteger()
-    val denominator = this.substring(divIndex + 1, this.length).toBigInteger()
-
-    return Rational(numerator, denominator)
-}
-
-data class Rational(var numerator: BigInteger, var denominator: BigInteger) : Comparable<Rational> {
+class Rational(n: BigInteger, d: BigInteger) : Comparable<Rational> {
+    val numerator: BigInteger
+    val denominator: BigInteger
 
     init {
-        if (denominator == BigInteger.ZERO)
-            throw IllegalArgumentException("The denominator cannot be equal to zero")
+        require(d != ZERO) { "Denominator must not be zero" }
+        val gcd = n.gcd(d)
+        val sign = d.signum().toBigInteger()
+        numerator = n / gcd * sign
+        denominator = d / gcd * sign
     }
 
-    operator fun plus(another: Rational): Rational {
-        if (this.denominator == another.denominator) {
-            return Rational(this.numerator + another.numerator, this.denominator)
-        }
-
-        // lcm(a, b) = |a*b| / gcd(a,b)
-        // TODO: Remove duplication
-        val lcm = (this.denominator * another.denominator).abs() / this.denominator.gcd(another.denominator)
-        val additionalMultiplier = lcm / this.denominator
-        val anotherAdditionalMultiplier = lcm / another.denominator
-
-        return Rational(
-            this.numerator * additionalMultiplier,
-            this.denominator * additionalMultiplier
-        ).plus(
-            Rational(
-                another.numerator * anotherAdditionalMultiplier,
-                another.denominator * anotherAdditionalMultiplier
-            )
+    operator fun plus(other: Rational): Rational =
+        Rational(
+            numerator * other.denominator + other.numerator * denominator,
+            denominator * other.denominator
         )
-    }
 
-    operator fun minus(another: Rational): Rational {
-        if (this.denominator == another.denominator) {
-            return Rational(this.numerator - another.numerator, this.denominator)
-        }
-
-        // lcm(a, b) = |a*b| / gcd(a,b)
-        // TODO: Remove duplication
-        val lcm = (this.denominator * another.denominator).abs() / this.denominator.gcd(another.denominator)
-        val additionalMultiplier = lcm / this.denominator
-        val anotherAdditionalMultiplier = lcm / another.denominator
-
-        return Rational(
-            this.numerator * additionalMultiplier,
-            this.denominator * additionalMultiplier
-        ).minus(
-            Rational(
-                another.numerator * anotherAdditionalMultiplier,
-                another.denominator * anotherAdditionalMultiplier
-            )
+    operator fun minus(other: Rational): Rational =
+        Rational(
+            numerator * other.denominator - other.numerator * denominator,
+            denominator * other.denominator
         )
-    }
 
-    operator fun times(another: Rational): Rational =
-        Rational(this.numerator * another.numerator, this.denominator * another.denominator)
+    operator fun times(other: Rational): Rational =
+        Rational(
+            numerator * other.numerator,
+            denominator * other.denominator
+        )
 
-    operator fun div(another: Rational): Rational = this * Rational(another.denominator, this.numerator)
+    operator fun div(other: Rational): Rational =
+        Rational(
+            numerator * other.denominator,
+            denominator * other.numerator
+        )
 
-    operator fun unaryMinus(): Rational = Rational(this.numerator.negate(), this.denominator)
+    operator fun unaryMinus(): Rational = Rational(-numerator, denominator)
 
-    override operator fun compareTo(other: Rational): Int = this.toDecimal().compareTo(other.toDecimal())
-
-    private fun toDecimal() = this.numerator.toBigDecimal() / this.denominator.toBigDecimal()
+    override operator fun compareTo(other: Rational): Int =
+        (numerator * other.denominator - other.numerator * denominator).signum()
 
     override fun toString(): String {
-        if (denominator == BigInteger.ONE) return numerator.toString()
-        normalize()
+        if (denominator == ONE) return numerator.toString()
         return "$numerator/$denominator"
-    }
-
-    private fun normalize() {
-        val gcd = numerator.gcd(denominator)
-        numerator /= gcd
-        denominator /= gcd
     }
 
     override fun equals(other: Any?): Boolean {
@@ -133,11 +91,6 @@ data class Rational(var numerator: BigInteger, var denominator: BigInteger) : Co
         if (javaClass != other?.javaClass) return false
 
         other as Rational
-
-        this.normalize()
-        other.normalize()
-
-        println("Comparing $this and $other")
 
         if (numerator != other.numerator) return false
         if (denominator != other.denominator) return false
@@ -150,4 +103,24 @@ data class Rational(var numerator: BigInteger, var denominator: BigInteger) : Co
         result = 31 * result + denominator.hashCode()
         return result
     }
+}
+
+infix fun Int.divBy(denominator: Int): Rational = Rational(this.toBigInteger(), denominator.toBigInteger())
+
+infix fun Long.divBy(denominator: Long): Rational = Rational(this.toBigInteger(), denominator.toBigInteger())
+
+infix fun BigInteger.divBy(denominator: BigInteger): Rational = Rational(this, denominator)
+
+fun String.toRational(): Rational {
+    fun String.toBigIntegerOrFail() = toBigIntegerOrNull() ?: throw IllegalArgumentException(
+        "Expecting rational number in the form of 'n/d' or 'n', was: '${this@toRational}'"
+    )
+
+    val divIndex = indexOf('/')
+    if (divIndex == -1) return Rational(toBigIntegerOrFail(), ONE)
+
+    val numerator = substring(0, divIndex).toBigIntegerOrFail()
+    val denominator = substring(divIndex + 1, length).toBigIntegerOrFail()
+
+    return Rational(numerator, denominator)
 }
