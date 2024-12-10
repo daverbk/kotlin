@@ -64,9 +64,8 @@ fun <T> createGameBoard(width: Int): GameBoard<T> = object : GameBoard<T> {
     override fun find(predicate: (T?) -> Boolean): Cell? =
         data.entries.find { predicate(it.value) }?.key
 
-    override fun filter(predicate: (T?) -> Boolean): Collection<Cell> {
-        return data.entries.filter { predicate(it.value) }.map { it.key }
-    }
+    override fun filter(predicate: (T?) -> Boolean): Collection<Cell> =
+        data.entries.filter { predicate(it.value) }.map { it.key }
 
     override fun getCellOrNull(i: Int, j: Int): Cell? = squareBoard.getCellOrNull(i, j)
 
@@ -79,12 +78,7 @@ fun <T> createGameBoard(width: Int): GameBoard<T> = object : GameBoard<T> {
     override fun getColumn(iRange: IntProgression, j: Int): List<Cell> =
         squareBoard.getColumn(iRange, j)
 
-    override fun Cell.getNeighbour(direction: Direction): Cell? {
-        return when (direction) {
-            UP -> getCellOrNull(this.i - 1, this.j)
-            DOWN -> getCellOrNull(this.i + 1, this.j)
-            LEFT -> getCellOrNull(this.i, this.j - 1)
-            RIGHT -> getCellOrNull(this.i, this.j + 1)
-        }
+    override fun Cell.getNeighbour(direction: Direction): Cell? = with(squareBoard) {
+        getNeighbour(direction)
     }
 }
