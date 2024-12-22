@@ -19,8 +19,6 @@ fun main() {
     filterNonZeroGenerated(list).toString() eq "[1, 2, 3]"
 }
 
-infix fun String.eq(s: String) = if (this == s) println("OK") else println("NOT OK, RECEIVED $this")
-
 inline fun <T> Iterable<T>.filter(predicate: (T) -> Boolean): List<T> {
     val destination = ArrayList<T>()
     for (element in this) {
@@ -30,4 +28,6 @@ inline fun <T> Iterable<T>.filter(predicate: (T) -> Boolean): List<T> {
     }
     return destination
 }
+
+infix fun String.eq(s: String) = if (this == s) println("OK") else println("NOT OK, RECEIVED $this")
 
