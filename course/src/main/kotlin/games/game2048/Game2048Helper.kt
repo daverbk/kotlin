@@ -17,6 +17,15 @@ package games.game2048
  *
  * You can find more examples in 'TestGame2048Helper'.
 */
-fun <T : Any> List<T?>.moveAndMergeEqual(merge: (T) -> T): List<T> =
-        TODO()
+fun <T : Any> List<T?>.moveAndMergeEqual(merge: (T) -> T): List<T> {
+    return this.filterNotNull().fold(mutableListOf()) { acc, elem ->
+        if (acc.isEmpty() || acc.last() != elem) {
+            acc.add(elem)
+        } else {
+            acc[acc.lastIndex] = merge(elem)
+        }
+        return@fold acc
+    }
+}
+
 

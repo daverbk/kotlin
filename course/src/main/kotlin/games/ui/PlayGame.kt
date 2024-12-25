@@ -3,7 +3,11 @@ package games.ui
 
 import board.Direction
 import games.game.Game
-import java.awt.*
+import java.awt.Color
+import java.awt.Font
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.JFrame
