@@ -2,6 +2,7 @@ package games.game2048
 
 import board.Cell
 import board.Direction
+import board.Direction.*
 import board.GameBoard
 import board.createGameBoard
 import games.game.Game
@@ -13,7 +14,7 @@ import games.game.Game
  * After implementing it you can try to play the game running 'PlayGame2048'.
  */
 fun newGame2048(initializer: Game2048Initializer<Int> = RandomGame2048Initializer): Game =
-        Game2048(initializer)
+    Game2048(initializer)
 
 class Game2048(private val initializer: Game2048Initializer<Int>) : Game {
     private val board = createGameBoard<Int?>(4)
@@ -41,7 +42,8 @@ class Game2048(private val initializer: Game2048Initializer<Int>) : Game {
  * Add a new value produced by 'initializer' to a specified cell in a board.
  */
 fun GameBoard<Int?>.addNewValue(initializer: Game2048Initializer<Int>) {
-    TODO()
+    val (cell, value) = initializer.nextValue(this) ?: return
+    this[cell] = value
 }
 
 /*
@@ -53,7 +55,11 @@ fun GameBoard<Int?>.addNewValue(initializer: Game2048Initializer<Int>) {
  * Return 'true' if the values were moved and 'false' otherwise.
  */
 fun GameBoard<Int?>.moveValuesInRowOrColumn(rowOrColumn: List<Cell>): Boolean {
-    TODO()
+    val originalValues = rowOrColumn.map { get(it) }
+    val newValues = originalValues.moveAndMergeEqual { it * 2 }
+    val paddedValues = newValues + List(rowOrColumn.size - newValues.size) { null }
+    rowOrColumn.forEachIndexed { index, cell -> set(cell, paddedValues[index]) }
+    return originalValues != paddedValues
 }
 
 /*
@@ -64,5 +70,17 @@ fun GameBoard<Int?>.moveValuesInRowOrColumn(rowOrColumn: List<Cell>): Boolean {
  * Return 'true' if the values were moved and 'false' otherwise.
  */
 fun GameBoard<Int?>.moveValues(direction: Direction): Boolean {
-    TODO()
+    val rangeOfRowsOrColumns =
+        if (direction == RIGHT || direction == DOWN)
+            width downTo 0
+        else
+            0..width
+
+    val rowsOrColumns = when (direction) {
+        UP, DOWN -> (1..width).map { getColumn(rangeOfRowsOrColumns, it) }
+        LEFT, RIGHT -> (1..width).map { getRow(it, rangeOfRowsOrColumns) }
+    }
+
+    val movedRows = rowsOrColumns.map { moveValuesInRowOrColumn(it) }
+    return movedRows.any { it }
 }
