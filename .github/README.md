@@ -14,6 +14,47 @@ code.
 
 ## Functions
 
+Calling a top-level function from Java
+
+```kotlin
+package intro
+
+fun foo() = 0
+```
+
+```java
+packge other;
+
+import intro.MyFileKt;
+
+public class UsingFoo {
+    public static void main(String[] args) {
+        MyFileKt.foo();
+    }
+}
+```
+
+We can use the `@JvmName` to change the name of the package to import.
+
+```kotlin
+@file:JvmName("Util")
+package intro
+
+fun foo() = 0
+```
+
+```java
+packge other;
+
+import static intro.Util;
+
+public class JavaUsage {
+    public static void main(String[] args) {
+        into i = Util.foo();
+    }
+}
+```
+
 ### Constructors
 
 ## Properties
