@@ -38,6 +38,7 @@ We can use the `@JvmName` to change the name of the package to import.
 
 ```kotlin
 @file:JvmName("Util")
+
 package intro
 
 fun foo() = 0
@@ -87,6 +88,13 @@ fun bar() {
 
 ## Extensions
 
+Kotlin's extensions are basically static functions defined in a separate auxiliary class. We can't call private members
+from extensions. As extension functions are static under the hood they cannot be overridden.
+
+```kotlin
+fun String.lastChar() = this[this.length - 1]
+```
+
 ## Inline functions
 
 # Nullability
@@ -95,15 +103,17 @@ Kotlin took the approach of making NPE a compile-time exception. Each type is a 
 the hood `fun foo(): String? = "foo"` is
 
 ```java
+
 @Nullable
 public static final String foo() {
     return "foo";
 }
 ```
 
-`fun bar(): String = "bar"` is 
+`fun bar(): String = "bar"` is
 
 ```java
+
 @NotNull
 public static final String foo() {
     return "foo";
