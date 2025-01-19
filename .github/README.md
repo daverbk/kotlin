@@ -103,7 +103,6 @@ Kotlin took the approach of making NPE a compile-time exception. Each type is a 
 the hood `fun foo(): String? = "foo"` is
 
 ```java
-
 @Nullable
 public static final String foo() {
     return "foo";
@@ -113,7 +112,6 @@ public static final String foo() {
 `fun bar(): String = "bar"` is
 
 ```java
-
 @NotNull
 public static final String foo() {
     return "foo";
@@ -122,6 +120,10 @@ public static final String foo() {
 
 Operators to work with nullability in Kotlin
 
+`!!`
+
+`s!!` - throws NPE if `s` is null
+
 `?.`
 
 ```mermaid
@@ -129,10 +131,6 @@ flowchart TD
     expression["foo?.bar()"] -->|foo != null| value["foo.bar()"]
     expression -->|foo == null| null[null]
 ```
-
-`!!`
-
-`s!!` - throws NPE if `s` is null
 
 `?:`
 
