@@ -86,6 +86,103 @@ fun bar() {
 
 # Lambdas
 
+If lambda is the last argument in a function we can move it out of the presences
+
+```kotlin
+list.any { i: Int -> i > 0 }
+```
+
+`it` or `this` can denote the argument if it's only one
+
+```kotlin
+list.any { it > 0 }
+```
+
+the last expression is the result
+
+```kotlin
+list.any {
+    println("processing $it")
+    it > 0 // is the same as return it > 0
+}
+```
+
+we can destruct arguments
+
+```kotlin
+map.mapValues { (key, value) -> "$key -> $value!" }
+```
+
+example of storing a lambda in a variable of type `(Int, Int) -> Int`
+
+```kotlin
+val sum: (Int, Int) -> Int = { x, y -> x + y }
+```
+
+Bound reference store the object on which the member can delay to called, while unbound can be called on any object of a
+given type
+
+`Bound`
+
+```kotlin
+class Person(val name: String, val age: Int) {
+    fun isOlder(ageLimit: Int) = age > ageLimit
+
+    fun getAgePredicate() = this::isOlder // <- here is a bound reference
+}
+```
+
+`Unbound`
+
+```kotlin
+fun isEven(i: Int): Boolean = i % 2 == 0
+::isEven
+```
+
+`return` in lambdas
+
+A return inside a `fun` would return from the whole function
+
+```kotlin
+fun duplicateNonZero(list: List<Int>): List<Int> {
+    return list.flatMap {
+        if (it == 0) return listOf()
+        listOf(it, it)
+    }
+}
+
+println(duplicateNonZero(listOf(3, 0, 5))) // would return [] - an empty list 
+```
+
+We can specify what lambda to return from so that we do not return from the whole function (`@`)
+
+```kotlin
+fun duplicateNonZero(list: List<Int>): List<Int> {
+    return list.flatMap {
+        if (it == 0) return@flatMap listOf()
+        listOf(it, it)
+    }
+}
+```
+
+The labeled return inside a `forEach` actually corresponds to java's `continue`
+
+```kotlin
+list.forEach {
+    if (it == 0) return@forEach
+    println(it)
+}
+```
+
+is the same as
+
+```kotlin
+for (element in list) {
+    if (element == 0) continue
+    print(element)
+}
+```
+
 ## Extensions
 
 Kotlin's extensions are basically static functions defined in a separate auxiliary class. We can't call private members
@@ -103,6 +200,7 @@ Kotlin took the approach of making NPE a compile-time exception. Each type is a 
 the hood `fun foo(): String? = "foo"` is
 
 ```java
+
 @Nullable
 public static final String foo() {
     return "foo";
@@ -112,6 +210,7 @@ public static final String foo() {
 `fun bar(): String = "bar"` is
 
 ```java
+
 @NotNull
 public static final String foo() {
     return "foo";
