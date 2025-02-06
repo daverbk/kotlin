@@ -192,13 +192,11 @@ from extensions. As extension functions are static under the hood they cannot be
 fun String.lastChar() = this[this.length - 1]
 ```
 
-A part from the [coding conventions](https://kotlinlang.org/docs/coding-conventions.html#source-file-organization)
+Reference of the [coding convention](https://kotlinlang.org/docs/coding-conventions.html#source-file-organization)
 
-```
-... when defining extension functions for a class which are relevant for all clients of this class, put them in the same file 
-with the class itself. When defining extension functions that make sense only for a specific client, put them next to the code of that client.
-Avoid creating files just to hold all extensions of some class.
-```
+... when defining extension functions for a class which are relevant for all clients of this class, put them in the same
+file with the class itself. When defining extension functions that make sense only for a specific client, put them next
+to the code of that client. Avoid creating files just to hold all extensions of some class.
 
 ## Inline functions
 
