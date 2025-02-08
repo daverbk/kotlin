@@ -1,5 +1,31 @@
 # [Kotlin Roadmap](../roadmap.pdf)
 
+<!-- TOC -->
+* [Kotlin Roadmap](#kotlin-roadmap)
+* [`class` / `object`](#class--object)
+  * [Modifiers](#modifiers)
+    * [`enum` class](#enum-class)
+    * [`data` class](#data-class)
+      * [`equals` and reference equality](#equals-and-reference-equality)
+    * [`sealed` class](#sealed-class)
+    * [Class delegation with `by`](#class-delegation-with-by)
+  * [Package structure](#package-structure)
+  * [Inheritance](#inheritance)
+  * [`object`](#object)
+    * [`companion object`](#companion-object)
+  * [Functions](#functions)
+    * [Constructors](#constructors)
+  * [Properties](#properties)
+    * [Lazy and late initialization](#lazy-and-late-initialization)
+* [Exceptions](#exceptions)
+* [Lambdas](#lambdas)
+  * [Extensions](#extensions)
+  * [Inline functions](#inline-functions)
+* [Nullability](#nullability)
+    * [Generics](#generics)
+* [Collections and Sequences](#collections-and-sequences)
+<!-- TOC -->
+
 Kotlin is compiled to Java bytecode, which provides the backward compatability. When wishing to see Kotlin in real-life
 use J2K converter can be used to convert part of source code into Kotlin. Another way is to start writing unit tests in
 Kotlin.
@@ -10,11 +36,218 @@ interoperability between Java code and Kotlin code.
 In `IntelliJ` we can use the `Show Kotlin bytecode` + `Decompile` features to see the Java alternative for the Kotlin
 code.
 
-# `class` / `object` members
+Reference on Kotlin conventions
+
+- [Kotlin for Java developers course part](https://www.coursera.org/learn/kotlin-for-java-developers/lecture/fZtQF/conventions)
+- [Kotlin coding conventions](https://kotlinlang.org/docs/coding-conventions.html)
+
+# `class` / `object`
+
+## Modifiers
+
+We can declare constants with `const` modifier, and it's going to be substituted with the value on the JVM level. It
+works only for primitive types.
+
+| modifier   | explanation                                                 |
+|------------|-------------------------------------------------------------|
+| `final`    | cannot be overridden (is sed by default)                    |
+| `open`     | can be overridden                                           |
+| `abstract` | must be overridden (can't have implementation)              |
+| `override` | overrides a member in a superclass or interface (mandatory) |
+
+| modifier    | class member                 | top-level declaration |
+|-------------|------------------------------|-----------------------|
+| `public`    | visible everywhere           | visible everywhere    |
+| `internal`  | visible in the module        | visible in the module |
+| `protected` | visible in subclasses (only) | –                     |
+| `private`   | visible in the class         | visible in the file   |
+
+| kotlin modifier | jvm level                     |
+|-----------------|-------------------------------|
+| `public`        | `public`                      |
+| `protected`     | `protected`                   |
+| `private`       | `private` / `package private` |
+| `internal`      | `public` & name ruining       |
+
+### `enum` class
+
+In kotlin `enum` is a modifier for classes to create enumerations
+
+### `data` class
+
+Generates `equals`, `hashCode`, `copy`, `toString`
+
+#### `equals` and reference equality
+
+In kotlin `==` calls `equals`. There is also `===` operator which checks reference equality. Bare `class` `eqauls` uses
+reference equality check.
+
+```kotlin
+val set1 = setOf(1, 2, 3)
+val set2 = setOf(1, 2, 3)
+
+set1 == set2 // true
+set1 === set2 // false
+```
+
+We can still exclude props from the basic methods in a `data class`by moving them outside the primary constructor.
+
+```kotlin
+data class User(val email: String) {
+    val nickname: String? = null
+}
+```
+
+### `sealed` class
+
+Restricts class hierarchy, all subclasses must be located in the sames file.
+
+### Class delegation with `by`
+
+We can delegate methods from one class another. We don't need to write boilerplate code for it.
+
+```kotlin
+interface Printer {
+    fun printMessage(message: String)
+}
+
+class ConsolePrinter : Printer {
+    override fun printMessage(message: String) {
+        pirntln(message)
+    }
+}
+
+class PrinterManager(printer: Printer) : Printer by printer
+
+fun main() {
+    val consolePrinter = ConsolePrinter()
+    val manager = PrinterManager(consolePrinter)
+
+    manager.printMessage("Hi there!") // <-- we are calling a method, the code of which 
+    // we did not write in PrinterManager explicitly
+}
+```
+
+## Package structure
+
+In kotlin we can put multiple classes inside one file, this file can also contain top-level statements
+
+## Inheritance
+
+```kotlin
+interface Base
+class BaseImpl : Base
+```
+
+```kotlin
+open class Parent
+class Child : Parent() // <-- () is the constructor call, so we can pass parameters there if any
+```
+
+## `object`
+
+`object` = singleton
+
+`java`
+
+```java
+public class JSingleton {
+    public final static JSingleton INSTANCE = new JSingleton();
+
+    private JSignleton() {
+    }
+
+    private foo() {
+    }
+}
+```
+
+`kotlin`
+
+```kotlin
+object KSingleton {
+    fun foo() {}
+}
+```
+
+### `companion object`
+
+In kotlin there are no `static` methods and `companion object`s might be a replacement for that.
+
+```kotlin
+class A {
+    companion object {
+        fun foo() = 1
+    }
+}
+
+fun main(args: Array<String>) {
+    A.foo()
+}
+```
+
+Companion objects can implement interfaces and be receiver of extension function.
+
+```kotlin
+interface Factory<T> {
+    fun create(): T
+}
+
+class A {
+    private constructor()
+
+    companion object : Factory<A> {
+        override fun create(): A {
+            return A()
+        }
+    }
+}
+
+fun <T> createNewInstance(factory: Factory<T>) { /* some code */
+}
+
+createNewInstance(A)
+A.create()
+```
+
+```kotlin
+class Person(val firstName: String, val lastName: String) {
+    companion object {}
+}
+
+fun Person.Companion.fromJson(json: String): Person {
+    // ... 
+}
+
+val p = Person.fromJson(json)
+```
+
+Not all objects are singletons, object expressions are the java's anonymous class alternative. They are used for the
+cases when we have to override multiple methods, otherwise we could just use lambdas.
+
+```kotlin
+widnow.addMouseListener() {
+    object : MouseAdapter() {
+        override fun mouseClicked(e: MouseEvent) {
+            // ..
+        }
+
+        override fun mouseEntered(e: MouseEvent) {
+            // ..
+        }
+    }
+}
+```
 
 ## Functions
 
-Calling a top-level function from Java
+There are no `static` members in kotlin. The closest thing to that would be:
+
+- top-level statements
+- `object`s' members
+- `companion object`s' members
+
+Calling a top-level function from Java:
 
 ```kotlin
 package intro
@@ -58,7 +291,90 @@ public class JavaUsage {
 
 ### Constructors
 
+```kotlin
+class A
+
+val a = A() // <-- calling a default constructor 
+```
+
+Full primary constructor syntax looks like this. `val` or `var` in the constructor would automatically create a
+property. Constructor's visibility can be changed.
+
+```kotlin
+class Person(name: String) { // <-- name is a constructor parameter
+    val name: String
+
+    init {
+        this.name = name
+    }
+}
+```
+
+We can declare secondary constructors and must use the primary constructor.
+
+```kotlin
+class Rectangle(val height: Int, val width: Int) {
+    constructor(side: Int) : this(side, side) { /* some logic */
+    }
+}
+```
+
 ## Properties
+
+`Kotlin`
+
+```kotlin
+contact.address
+contact.address = "..."
+```
+
+`Java`
+
+```java
+contact.getAddress();
+contact.
+
+setAdderss("...");
+```
+
+`property` = `accessor(s)`
+
+`val` = `getter`
+
+`var` = `getter` + `setter`
+
+If the `field` is not mentioned in custom accessor then no backing field is generated. All properties are `open`.
+
+### Lazy and late initialization
+
+Lazy props' values is calculated on the first access.
+
+```kotlin
+val lazyValue: String by lazy {
+    println("completed!")
+    "Hello"
+}
+```
+
+`lateinit` is useful when we want to initialize the values not in the constructor and not to use nullable accessors
+everywhere. If the property was not initialize a runtime `UninitializedPropertyAccessException` is thrown. `lateinit`
+can't be `val`, can't be nullable or of a primitive type.
+
+```kotlin
+class KotlinActivity : Activity() {
+    lateinit var myData: MyData
+
+    override fun onCreate(savedInstanceState: Budnle?) {
+        super.onCreate(savedInstanceState)
+
+        myData = intent.getParcelableExtra("MY_DATA")
+    }
+}
+```
+
+```kotlin
+myData.foo // we can call props of myData with no safe accessors
+```
 
 # Exceptions
 
@@ -186,7 +502,7 @@ for (element in list) {
 ## Extensions
 
 Kotlin's extensions are basically static functions defined in a separate auxiliary class. We can't call private members
-from extensions. As extension functions are static under the hood they cannot be overridden.
+from extensions. As extension functions are static under the hood they cannot be overridden. Properties can be extended.
 
 ```kotlin
 fun String.lastChar() = this[this.length - 1]
@@ -233,16 +549,16 @@ Operators to work with nullability in Kotlin
 
 ```mermaid
 flowchart TD
-    expression["foo?.bar()"] -->|foo != null| value["foo.bar()"]
-    expression -->|foo == null| null[null]
+    expression["foo?.bar()"] -->|foo ! = null| value["foo.bar()"]
+    expression -->|foo = = null| null[null]
 ```
 
 `?:`
 
 ```mermaid
 flowchart TD
-    expression["foo ?: bar"] -->|foo != null| value["bar"]
-    expression -->|foo == null| null[bar]
+    expression["foo ?: bar"] -->|foo ! = null| value["bar"]
+    expression -->|foo = = null| null[bar]
 ```
 
 `as?`
@@ -251,6 +567,42 @@ flowchart TD
 flowchart TD
     expression["foo as? Type"] -->|foo is Type| value["foo as Type"]
     expression -->|foo !is Type| null[null]
+```
+
+### Generics
+
+A regular generic argument (`T` for example) can receive a nullable type. We can make it explicit.
+
+```kotlin
+fun <T> List<T>.firstOrNull(): T? {}
+```
+
+At the same time we can set a non-nullable upper bound with `Any`.
+
+```kotlin
+fun <T : Any> foo(list: List<T>) {
+    for (element in list) {
+        
+    }
+}
+```
+
+If we need to use multiple constraints for a type parameter we must use the `where`.
+
+```kotlin
+fun <T> ensureTrailingPeriod(seq: T) where T : CharSequence, T : Appendable {
+    if (!seq.endsWith('.')) {
+        seq.append('.')
+    }
+}
+```
+
+In situations when generics result in the same JVM signature we must use `@JvmName` to resolve the conflict.
+
+```kotlin
+fun List<Int>.average(): Duble { }
+@JvmName("averageOfDouble")
+fun List<Double>.average(): Double { }
 ```
 
 # Collections and Sequences
