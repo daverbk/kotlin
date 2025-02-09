@@ -516,6 +516,52 @@ to the code of that client. Avoid creating files just to hold all extensions of 
 
 ## Inline functions
 
+Inlining a function means that compiler will substitute a body of the function instead of calling it. No anonymous class
+will be created for it.
+
+```kotlin
+inline fun <R> run(block: () -> R): R = block()
+
+val name = "Kotlin"
+run { println("Hi, $name!") }
+```
+
+Will be compiled to the bytecode
+
+```kotlin
+val name = "Kotlin"
+println("Hi, $name!") // inlined code of lambda body
+```
+
+### Resource management with `use`
+
+`java`
+
+```java
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+static String readFirstLineFormFile(String path) throws IOException {
+  try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+    return br.readLine();
+  }
+}
+``` 
+
+`kotlin`
+
+```kotlin
+import java.io.BufferedReader
+import java.io.FileReader
+
+fun readFirstLineFromFile(path: String): String {
+    BufferedReader(FileReader(path)).use { br ->
+        return br.readLine()
+    }
+}
+```
+
 # Nullability
 
 Kotlin took the approach of making NPE a compile-time exception. Each type is a child of the same nullable type. Under
